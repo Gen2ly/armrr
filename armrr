@@ -10,7 +10,8 @@ countries=(AT AU BE BG BR BY CA CH CL CN CO CZ DE DK EE ES FI FR GB GR HU IE IL 
 # Usage display if incorrect number of parameters given
 if [ $# -gt 1 -o "$1" = -h -o "$1" = --help ]; then
   echo "${0##*/} [*country code] - download pacman ranked mirrorlist"
-  echo "  countries: "${countries[@]}""
+  #echo ""
+  echo " "${countries[@]}"" | fmt -c -w 80
   exit 1; fi
 
 # Root user access test
