@@ -27,7 +27,9 @@ if ! [ "$country" ]; then
   done; fi
 
 # Test if $country is in $countries array
-[[ " ${countries[*]} " == *" $country "* ]] || echo "Country value not known"
+if [[ " ${countries[*]} " == *" $country "* ]]; then
+  echo "Invalid country code."
+  exit 1 ;fi
 
 # Download
 tmp_ml=$(mktemp --suffix=-mirrorlist)  # temporary mirrorlist
@@ -52,7 +54,7 @@ while true; do
               editor=vim
               editop=$(printf '%s' +"set syn=sh");
             else
-              editor=nano; fi
+              editor=${EDITOR}; fi
             "$editor" "$editop" "$tmp_ml"
             break 2 ;;
     [Nn] )  break 2 ;;
@@ -63,9 +65,9 @@ done
 # Backup
 bck_ml () {
 if [ -f /etc/pacman.d/mirrorlist ]; then
-  $sudo mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist_$(date +%Y%m%d%H%M)
+  mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist_$(date +%Y%m%d%H%M)
 else
-  echo "Warning: no /etc/pacman.d/mirrorlist"
+  echo "Warning: /etc/pacman.d/mirrorlist non-existant."
 fi ; }
 
 # Install
@@ -73,7 +75,7 @@ while true; do
   read -p "Install new mirrorlist and backup previous? (y/n): " yn
   case $yn in
     [Yy] )  bck_ml
-            $sudo install -Dm644 "$tmp_ml" /etc/pacman.d/mirrorlist
+            install -Dm644 "$tmp_ml" /etc/pacman.d/mirrorlist
             break 2 ;;
     [Nn] )  break 2 ;;
     [*]  )  true
