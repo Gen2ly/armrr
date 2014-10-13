@@ -30,6 +30,9 @@ if ! [[ " ${countries[*]} " == *" $country "* ]]; then
   echo "Invalid country code."
   exit 1; fi
 
+# Create url from country
+url="https://www.archlinux.org/mirrorlist/?country=$country&protocol=http&ip_version=4&use_mirror_status=on"
+
 # Download
 tmp_ml=$(mktemp --suffix=-mirrorlist)  # temporary mirrorlist
 if curl -s "$url" -o "$tmp_ml"; then
