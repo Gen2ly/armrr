@@ -1,8 +1,6 @@
 #!/usr/bin/bash
 # Download pacman ranked mirrorlist
 
-url="https://www.archlinux.org/mirrorlist/?country=US&protocol=http&ip_version=4&use_mirror_status=on"
-
 countries=(AT AU BE BG BR BY CA CH CL CN CO CZ DE DK EE ES FI FR GB GR HU IE IL IN IT JP KR KZ LK LU LV MK NC NL NO NZ PL PT RO RS RU SE SG SK TR TW UA US UZ VN ZA)
 country=""
 [ "$1" ] && country="$1"
@@ -31,6 +29,7 @@ if ! [[ " ${countries[*]} " == *" $country "* ]]; then
   exit 1; fi
 
 # Download
+url="https://www.archlinux.org/mirrorlist/?country=${country}&protocol=http&ip_version=4&use_mirror_status=on"
 tmp_ml=$(mktemp --suffix=-mirrorlist)  # temporary mirrorlist
 if curl -s "$url" -o "$tmp_ml"; then
   if ! grep "^## Arch Linux repository mirrorlist" "$tmp_ml" > /dev/null; then
