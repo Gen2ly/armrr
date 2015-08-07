@@ -2,13 +2,25 @@
 # Download pacman ranked mirrorlist
 
 countries=(AT AU BE BG BR BY CA CH CL CN CO CZ DE DK EE ES FI FR GB GR HU IE IL IN IT JP KR KZ LK LU LV MK NC NL NO NZ PL PT RO RS RU SE SG SK TR TW UA US UZ VN ZA)
+protocols=(http https)
+ipvs=(4 6)
+
 country=""
+protocol="http"
+ipv="4"
+
 [ "$1" ] && country="$1"
+[ "$2" ] && protocol="$2"
+[ "$3" ] && ipv="$3"
 
 # Usage display if incorrect number of parameters given
-if [ $# -gt 1 -o "$1" = -h -o "$1" = --help ]; then
-  echo "${0##*/} [*country code] - download pacman ranked mirrorlist"
-  echo " "${countries[@]}"" | fmt -c -w 80
+if [ $# -gt 3 -o "$1" = -h -o "$1" = --help ]; then
+  echo "${0##*/} [*country code[,*country code[,...]]] [protocol] [ipv]"
+  echo "Download pacman ranked mirrorlist"
+  echo "      Countrycodes:"
+  echo "                    "${countries[@]}"" | fmt -c -w 80
+  echo "  Protocols (${protocol}): "${protocols[@]}"" | fmt -c -w 80
+  echo "    IP version (${ipv}): "${ipvs[@]}"" | fmt -c -w 80
   exit 1; fi
 
 # Root user access test
@@ -23,13 +35,30 @@ if ! [ "$country" ]; then
     echo "Select 1, or 2..."
   done; fi
 
-# Test if $country is in $countries array
-if ! [[ " ${countries[*]} " == *" $country "* ]]; then
-  echo "Invalid country code."
+# Split countries by ",", test them and create params for url
+while IFS=',' read -ra line; do
+  for item in "${line[@]}"; do
+    countryparams="$countryparams&country=$item"
+
+    # Test if $country is in $countries array
+    if ! [[ " ${countries[*]} " == *" $item "* ]]; then
+      echo "Invalid country code."
+      exit 1; fi
+  done
+done <<< "$country"
+
+# Test if $protocol is in $protocol array
+if ! [[ " ${protocols[*]} " == *" $protocol "* ]]; then
+  echo "Invalid protocol."
+  exit 1; fi
+
+# Test if $ipv is in $ipvs array
+if ! [[ " ${ipvs[*]} " == *" $ipv"* ]]; then
+  echo "Invalid IP version"
   exit 1; fi
 
 # Download
-url="https://www.archlinux.org/mirrorlist/?country=${country}&protocol=http&ip_version=4&use_mirror_status=on"
+url="https://www.archlinux.org/mirrorlist/?${countryparams:1}&protocol=$protocol&ip_version=$ipv&use_mirror_status=on"
 tmp_ml=$(mktemp --suffix=-mirrorlist)  # temporary mirrorlist
 if curl -s "$url" -o "$tmp_ml"; then
   if ! grep "^## Arch Linux repository mirrorlist" "$tmp_ml" > /dev/null; then
